@@ -51,13 +51,13 @@ def check_docker(image_name, request, is_already_tar):
 
     if is_already_tar:
         try:
-            extension = pathlib.Path(request.files["file"].filename).suffix
+            extension = pathlib.Path(request.files["stream"].filename).suffix
             uploaded_file = f"/tmp/{uuid.uuid4()}{extension}"
             with open(uploaded_file, "bw") as f:
                 chunk_size = 4096
                 while True:
                     # chunk = request.stream.read(chunk_size)
-                    chunk = request.files["file"].stream.read(chunk_size)
+                    chunk = request.files["stream"].stream.read(chunk_size)
                     if len(chunk) == 0:
                         break
                     f.write(chunk)
