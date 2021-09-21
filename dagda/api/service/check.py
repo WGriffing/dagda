@@ -56,12 +56,11 @@ def check_docker(image_name, request, is_already_tar):
             with open(uploaded_file, "bw") as f:
                 chunk_size = 4096
                 while True:
-                    # chunk = request.stream.read(chunk_size)
                     chunk = request.files["stream"].stream.read(chunk_size)
                     if len(chunk) == 0:
                         break
                     f.write(chunk)
-            image_name = image_name if image_name else "unknown"  # TODO
+            image_name = image_name if image_name else "unknown"
             is_already_tar = True
         except Exception as ex:
             message = "Unexpected exception of type {0} occurred while unpacking the docker tar file: {1!r}".format(
