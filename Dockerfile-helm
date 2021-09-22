@@ -2,6 +2,11 @@ FROM python:3.8.11-buster
 RUN apt update -y
 RUN apt install -y apt-transport-https ca-certificates curl gnupg lsb-release apt-utils
 
+# add falco repo
+RUN curl -s https://falco.org/repo/falcosecurity-3672BA8F.asc | apt-key add -
+RUN echo "deb https://download.falco.org/packages/deb stable main" | tee -a /etc/apt/sources.list.d/falcosecurity.list
+
+# add docker repo
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 RUN echo \
     "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \

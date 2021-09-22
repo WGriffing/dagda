@@ -188,6 +188,34 @@ class Analyzer:
             d["version"] = splitted_dep[2]
             d["product_file_path"] = splitted_dep[3]
             d["vulnerabilities"] = self.get_vulnerabilities(d["product"], d["version"])
+            # purpose of this code is to not throw away the cve_id reported by 3grander/4depcheck container process
+            dep_check_cve_id = splitted_dep[4]
+            # DagdaLogger.get_logger().debug(f"dep_check_cve_id: {dep_check_cve_id}")
+            included_vuln_ids = []
+            for vuln in d["vulnerabilities"]:
+                included_vuln_ids.extend(str(vuln.keys()))
+            # DagdaLogger.get_logger().debug(
+            #    f"included_vuln_ids: {json.dumps(included_vuln_ids)}"
+            # )
+            if not dep_check_cve_id in included_vuln_ids:
+                info = {}
+                cve_info = {}
+                cve_data = self.mongoDbDriver.db.cve_info.find_one(
+                    {"cveid": dep_check_cve_id}
+                )
+                # DagdaLogger.get_logger().debug(f"cve_data: {cve_data}")
+                if cve_data is not None:
+                    cve_info = cve_data.copy()
+                    cve_info["mod_date"] = cve_data["mod_date"].strftime("%d-%m-%Y")
+                    cve_info["pub_date"] = cve_data["pub_date"].strftime("%d-%m-%Y")
+                    del cve_info["_id"]
+
+                    info[dep_check_cve_id] = cve_info
+                    # DagdaLogger.get_logger().debug(f"info: {json.dumps(info)}")
+                    d["vulnerabilities"].append(info)
+            # DagdaLogger.get_logger().debug(
+            #    f"d['vulnerabilities']: {json.dumps(d['vulnerabilities'])}"
+            # )
             d["is_vulnerable"] = True
             d["is_false_positive"] = self.is_fp(image_name, d["product"], d["version"])
             if d["is_false_positive"]:
@@ -303,3 +331,4 @@ class Analyzer:
             DagdaLogger.get_logger().debug(
                 "Dependencies from the docker image retrieved"
             )
+            # DagdaLogger.get_logger().debug(f"dependencies: {json.dumps(dependencies)}")
