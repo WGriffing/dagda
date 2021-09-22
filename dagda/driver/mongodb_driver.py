@@ -38,7 +38,7 @@ class MongoDbDriver:
 
         # Init
         self.client = pymongo.MongoClient('mongodb://' + auth + mongodb_host + ':' + str(mongodb_port) + '/',
-                                          connect=False, ssl=mongodb_ssl)
+                                          connect=False, ssl=mongodb_ssl, connectTimeoutMS=1_000_000)
         self.db = self.client.vuln_database
 
     # -- Inserting and bulk inserting methods
