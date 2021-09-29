@@ -149,24 +149,25 @@ class SysdigFalcoMonitor:
                     falco_event = {}
                     line = line.decode('utf-8').replace("\n", "")
                     json_data = json.loads(line)
-                    container_id = json_data['output_fields']['container.id']
-                    if container_id != 'host':
-                        try:
-                            falco_event['container_id'] = container_id
-                            falco_event['image_name'] = json_data['output_fields']['container.image.repository']
-                            if 'container.image.tag' in json_data['output_fields']:
-                                falco_event['image_name'] += ":" + json_data['output_fields']['container.image.tag']
-                            falco_event['output'] = json_data['output']
-                            falco_event['priority'] = json_data['priority']
-                            falco_event['rule'] = json_data['rule']
-                            falco_event['time'] = json_data['time']
-                            sysdig_falco_events.append(falco_event)
-                        except IndexError:
-                            # The /tmp/falco_output.json file had information about ancient events, so nothing to do
-                            pass
-                        except KeyError:
-                            # The /tmp/falco_output.json file had information about ancient events, so nothing to do
-                            pass
+                    if 'output_fields' in json_data and 'container.id' in json_data['output_fields']:
+                        container_id = json_data['output_fields']['container.id']
+                        if container_id != 'host':
+                            try:
+                                falco_event['container_id'] = container_id
+                                falco_event['image_name'] = json_data['output_fields']['container.image.repository']
+                                if 'container.image.tag' in json_data['output_fields']:
+                                    falco_event['image_name'] += ":" + json_data['output_fields']['container.image.tag']
+                                falco_event['output'] = json_data['output']
+                                falco_event['priority'] = json_data['priority']
+                                falco_event['rule'] = json_data['rule']
+                                falco_event['time'] = json_data['time']
+                                sysdig_falco_events.append(falco_event)
+                            except IndexError:
+                                # The /tmp/falco_output.json file had information about ancient events, so nothing to do
+                                pass
+                            except KeyError:
+                                # The /tmp/falco_output.json file had information about ancient events, so nothing to do
+                                pass
                 last_file_position = fbuf.tell()
                 if len(sysdig_falco_events) > 0:
                     self.mongodb_driver.bulk_insert_sysdig_falco_events(sysdig_falco_events)

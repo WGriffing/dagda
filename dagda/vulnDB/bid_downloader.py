@@ -147,9 +147,16 @@ def get_bid(bugtraq_id):
             )
             return None
     except requests.ConnectionError:
-        DagdaLogger.get_logger().warning(
-            'Connection error occurred with: "' + url + '"'
-        )
+        DagdaLogger.get_logger().warning('Connection error occurred with: "' + url +
+                                         '". Proceeding as normal without this bid.')
+        return None
+    except json.decoder.JSONDecodeError:
+        DagdaLogger.get_logger().warning('JSON decode error occurred with: "' + url +
+                                         '". Proceeding as normal without this bid.')
+        return None
+    except Exception:
+        DagdaLogger.get_logger().warning('Unknown error occurred with: "' + url +
+                                         '". Proceeding as normal without this bid.')
         return None
 
 
